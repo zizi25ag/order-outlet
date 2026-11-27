@@ -21,6 +21,17 @@
   </style>
 </head>
 <body>
-  <iframe src="https://script.google.com/macros/s/AKfycby-3CRQIFPxQBCARK1ZcT6aDCs1I6U5rBDICi4qL6rUp-TR72s49_iR7p483hy5vQD-/exec" allow="camera; microphone; geolocation"></iframe>
+  <iframe src="https://script.google.com/macros/s/AKfycby-3CRQIFPxQBCARK1ZcT6aDCs1I6U5rBDICi4qL6rUp-TR72s49_iR7p483hy5vQD-/exec" allow="web-share; clipboard-write; camera; microphone; geolocation"></iframe>
+
+  <script>
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'SHARE_WA_IMAGE') {
+        if (window.AndroidBridge && typeof window.AndroidBridge.shareImageAndText === 'function') {
+          window.AndroidBridge.shareImageAndText(event.data.image, event.data.text);
+        }
+      }
+    });
+  </script>
+
 </body>
 </html>
