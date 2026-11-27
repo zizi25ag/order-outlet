@@ -24,11 +24,42 @@
   <iframe src="https://script.google.com/macros/s/AKfycby-3CRQIFPxQBCARK1ZcT6aDCs1I6U5rBDICi4qL6rUp-TR72s49_iR7p483hy5vQD-/exec" allow="web-share; clipboard-write; camera; microphone; geolocation"></iframe>
 
   <script>
-    window.addEventListener('message', function(event) {
+    window.addEventListener('message', async function(event) {
       if (event.data && event.data.type === 'SHARE_WA_IMAGE') {
+        // 1. JIKA DIBUKA DARI APK ANDROID -> Kirim lewat jembatan native Android
         if (window.AndroidBridge && typeof window.AndroidBridge.shareImageAndText === 'function') {
           window.AndroidBridge.shareImageAndText(event.data.image, event.data.text);
+          return;
         }
+
+        // 2. JIKA DIBUKA DARI WEB BROWSER HP (Chrome/Safari) -> Gunakan Web Share API langsung
+        try {
+          const res = await fetch(event.data.image);
+          const blob = await res.blob();
+          const file = new File([blob], "Order_Struk.png", { type: "image/png" });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              text: event.data.text
+            });
+            return;
+          }
+        } catch (err) {
+          console.log("Web Share gagal/dibatalkan:", err);
+        }
+
+        // 3. JIKA DIBUKA DARI BROWSER LAPTOP / PC -> Unduh gambar & buka WhatsApp Web
+        const link = document.createElement('a');
+        link.download = "Order_Struk.png";
+        link.href = event.data.image;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        const hostWa = 'api' + '.whatsapp' + '.com';
+        window.open("https://" + hostWa + "/send?text=" + encodeURIComponent(event.data.text), '_blank');
+
       }
     });
   </script>
